@@ -1,0 +1,105 @@
+<?php
+require 'db.php';
+
+$today = date('Y-m-d');
+
+// 表示対象（今日までに届くもの）
+$stmt1 = $pdo->prepare("SELECT * FROM future_memos WHERE deliver_date <= ? ORDER BY deliver_date DESC");
+$stmt1->execute([$today]);
+$memos_arrived = $stmt1->fetchAll();
+
+// 非表示対象（未来に届くもの）
+$stmt2 = $pdo->prepare("SELECT COUNT(*) FROM future_memos WHERE deliver_date > ?");
+$stmt2->execute([$today]);
+$future_count = $stmt2->fetchColumn();
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>未来のわたしへ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: radial-gradient(circle at center, #0f2027, #203a43, #2c5364);
+      font-family: 'Orbitron', sans-serif;
+      color: #ffffff;
+      padding: 30px;
+      max-width: 700px;
+      margin: auto;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #00e5ff;
+    }
+    form {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid #00e5ff;
+      border-radius: 10px;
+      padding: 30px;
+      margin-bottom: 40px;
+      box-shadow: 0 0 10px #00e5ff33;
+    }
+    textarea, input[type="date"] {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 10px;
+      background: #1a1a1a;
+      border: 1px solid #00e5ff;
+      color: white;
+      border-radius: 5px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+      background-color: #00e5ff;
+      color: black;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #00bcd4;
+    }
+    .memo {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid #ffffff22;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #00e5ff22;
+    }
+    .date {
+      font-size: 0.9em;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+
+<h1>未来のわたしへ</h1>
+
+<form action="insert.php" method="post">
+  <textarea name="content" rows="4" placeholder="未来の自分にメッセージを…" required></textarea>
+  <input type="date" name="deliver_date" min="<?= $today ?>" max="<?= date('Y-m-d', strtotime('+3 months')) ?>" required>
+  <button type="submit">🚀 メッセージを届ける</button>
+</form>
+
+<h2>届いたメッセージ</h2>
+<?php foreach ($memos_arrived as $memo): ?>
+  <div class="memo">
+    <div class="date">📅 <?= htmlspecialchars($memo['deliver_date']) ?></div>
+    <div><?= nl2br(htmlspecialchars($memo['content'])) ?></div>
+  </div>
+<?php endforeach; ?>
+
+<?php if ($future_count > 0): ?>
+  <p>✉ <?= $future_count ?>件のメッセージが、これから届きます。</p>
+<?php endif; ?>
+
+</body>
+</html>
