@@ -66,12 +66,36 @@ $future_count = $stmt2->fetchColumn();
       background-color: #00bcd4;
     }
     .memo {
+      position: relative;
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid #ffffff22;
       padding: 15px;
       margin-bottom: 15px;
       border-radius: 8px;
       box-shadow: 0 0 10px #00e5ff22;
+    }
+    .memo-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .memo-buttons form {
+      margin: 0;
+    }
+    .memo button {
+      padding: 5px 12px;
+      background-color: #00e5ff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      color: #000;
+      font-size: 0.85em;
+      font-family: 'Orbitron', sans-serif;
+      width: auto;
+    }
+    .memo button:hover {
+      background-color: #00bcd4;
     }
     .date {
       font-size: 0.9em;
@@ -94,6 +118,20 @@ $future_count = $stmt2->fetchColumn();
   <div class="memo">
     <div class="date">📅 <?= htmlspecialchars($memo['deliver_date']) ?></div>
     <div><?= nl2br(htmlspecialchars($memo['content'])) ?></div>
+
+    <div class="memo-buttons">
+      <!-- 編集ボタン -->
+      <form action="edit.php" method="get">
+        <input type="hidden" name="id" value="<?= $memo['id'] ?>">
+        <button type="submit">✏ 編集</button>
+      </form>
+
+      <!-- 削除ボタン -->
+      <form action="delete.php" method="post" onsubmit="return confirm('本当に削除しますか？');">
+        <input type="hidden" name="id" value="<?= $memo['id'] ?>">
+        <button type="submit">🗑 削除</button>
+      </form>
+    </div>
   </div>
 <?php endforeach; ?>
 
