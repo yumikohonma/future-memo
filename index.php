@@ -1,15 +1,21 @@
 <?php
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 require 'db.php';
 
 $today = date('Y-m-d');
+$max_date = date('Y-m-d', strtotime('+3 months')); // ← これが重要！
 
 // 表示対象（今日までに届くもの）
-$stmt1 = $pdo->prepare("SELECT * FROM future_memos WHERE deliver_date <= ? ORDER BY deliver_date DESC");
+$stmt1 = $pdo->prepare("SELECT * FROM future_memos WHERE future_date <= ? ORDER BY future_date DESC");
 $stmt1->execute([$today]);
 $memos_arrived = $stmt1->fetchAll();
 
 // 非表示対象（未来に届くもの）
-$stmt2 = $pdo->prepare("SELECT COUNT(*) FROM future_memos WHERE deliver_date > ?");
+$stmt2 = $pdo->prepare("SELECT COUNT(*) FROM future_memos WHERE future_date > ?");
 $stmt2->execute([$today]);
 $future_count = $stmt2->fetchColumn();
 ?>
@@ -109,14 +115,14 @@ $future_count = $stmt2->fetchColumn();
 
 <form action="insert.php" method="post">
   <textarea name="content" rows="4" placeholder="未来の自分にメッセージを…" required></textarea>
-  <input type="date" name="deliver_date" min="<?= $today ?>" max="<?= date('Y-m-d', strtotime('+3 months')) ?>" required>
+  <input type="date" name="future_date" min="<?= $today ?>" max="<?= $max_date ?>" required>
   <button type="submit">🚀 メッセージを届ける</button>
 </form>
 
 <h2>届いたメッセージ</h2>
 <?php foreach ($memos_arrived as $memo): ?>
   <div class="memo">
-    <div class="date">📅 <?= htmlspecialchars($memo['deliver_date']) ?></div>
+    <div class="date">📅 <?= htmlspecialchars($memo['future_date']) ?></div>
     <div><?= nl2br(htmlspecialchars($memo['content'])) ?></div>
 
     <div class="memo-buttons">

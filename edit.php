@@ -1,4 +1,8 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 require 'db.php';
 
 $today = date('Y-m-d');
@@ -8,18 +12,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 更新処理
     $id = $_POST['id'];
     $content = $_POST['content'];
-    $deliver_date = $_POST['deliver_date'];
+    $future_date = $_POST['future_date'];
 
-    if ($content === '' || $deliver_date === '') {
+    if ($content === '' || $future_date === '') {
         exit('未入力項目があります');
     }
 
-    if ($deliver_date < $today || $deliver_date > $max_date) {
+    if ($future_date < $today || $future_date > $max_date) {
         exit('日付は本日から3ヶ月以内で指定してください');
     }
 
-    $stmt = $pdo->prepare("UPDATE future_memos SET content = ?, deliver_date = ? WHERE id = ?");
-    $stmt->execute([$content, $deliver_date, $id]);
+    $stmt = $pdo->prepare("UPDATE future_memos SET content = ?, future_date = ? WHERE id = ?");
+    $stmt->execute([$content, $future_date, $id]);
 
     header('Location: index.php');
     exit;
@@ -46,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <form method="post">
     <input type="hidden" name="id" value="<?= $memo['id'] ?>">
     <textarea name="content" rows="4" required><?= htmlspecialchars($memo['content']) ?></textarea><br>
-    <input type="date" name="deliver_date" value="<?= $memo['deliver_date'] ?>" min="<?= $today ?>" max="<?= $max_date ?>" required><br>
+    <input type="date" name="future_date" value="<?= $memo['future_date'] ?>" min="<?= $today ?>" max="<?= $max_date ?>" required><br>
     <button type="submit">更新する</button>
   </form>
   <p><a href="index.php">← 戻る</a></p>
